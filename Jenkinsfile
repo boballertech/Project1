@@ -25,12 +25,27 @@ environment {
               }
             }
           }
-       stage('build with Maven') {
+       stage('Build with Maven') {
             steps {
                 sh 'cd SampleWebApp && mvn clean package'
             }
+        } 
+        stage('Deploy to jfrog') {
+            steps {
+                rtUpload (
+                    serverId: 'my-jfrog',
+                    spec: '''{
+                          "files": [
+                            {
+                              "pattern": "**/*.war",
+                              "target": "Demo-repo/"
+                            }
+                        ]
+                    }''',
+                )
+            }
         }
-        stage('deploy to tomcat') {
+        stage('Deploy to tomcat') {
             steps {
                 deploy adapters: [tomcat9(credentialsId: 'tomcatID', path: '', url: "${TOMCAT_URL}")], contextPath: 'webapp2', war: '**/*.war'
             }
